@@ -1,0 +1,46 @@
+
+// views/dokter.ejs
+<%- contentFor('body') %>
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2>Daftar Dokter</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+            Tambah Dokter
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Spesialisasi</th>
+                        <th>No. Telp</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% doctors.forEach(doctor => { %>
+                        <tr>
+                            <td><%= doctor.nama %></td>
+                            <td><%= doctor.spesialisasi %></td>
+                            <td><%= doctor.no_telp %></td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editDoctorModal<%= doctor.id %>">
+                                    Edit
+                                </button>
+                                <a href="/dokter/delete/<%= doctor.id %>" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure?')">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

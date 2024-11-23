@@ -1,0 +1,112 @@
+
+// views/pasien.ejs
+<%- contentFor('body') %>
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2>Daftar Pasien</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPatientModal">
+            Tambah Pasien
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Usia</th>
+                        <th>Diagnosis</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% patients.forEach(patient => { %>
+                        <tr>
+                            <td><%= patient.nama %></td>
+                            <td><%= patient.usia %></td>
+                            <td><%= patient.diagnosis %></td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editPatientModal<%= patient.id %>">
+                                    Edit
+                                </button>
+                                <a href="/pasien/delete/<%= patient.id %>" 
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure?')">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Patient Modal -->
+<div class="modal fade" id="addPatientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Pasien Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/pasien/add" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" name="nama" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Usia</label>
+                        <input type="number" name="usia" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Diagnosis</label>
+                        <textarea name="diagnosis" class="form-control" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Patient Modals -->
+<% patients.forEach(patient => { %>
+    <div class="modal fade" id="editPatientModal<%= patient.id %>" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Pasien</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/pasien/edit/<%= patient.id %>" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nama</label>
+                            <input type="text" name="nama" value="<%= patient.nama %>" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Usia</label>
+                            <input type="number" name="usia" value="<%= patient.usia %>" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Diagnosis</label>
+                            <textarea name="diagnosis" class="form-control" required><%= patient.diagnosis %></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<% }) %>
