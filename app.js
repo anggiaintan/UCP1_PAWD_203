@@ -2,6 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
+const methodOverride = require('method-override');  // Import method-override
 
 const authRoutes = require('./routes/authRoutes');
 const dokterRoutes = require('./routes/dokter');
@@ -14,6 +15,22 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(methodOverride('_method')); // Mengaktifkan penggunaan metode PUT dan DELETE melalui _method
+
+// Data sementara untuk dokter (akan diganti dengan database nanti)
+let dokterData = [];
+
+// Rute untuk menambah data dokter
+app.post('/dokter', (req, res) => {
+    const { nama, spesialisasi, no_telp } = req.body;
+    
+    // Simpan data dokter ke dalam array sementara
+    const dokter = { nama, spesialisasi, no_telp };
+    dokterData.push(dokter);
+
+    // Mengembalikan respons sukses
+    res.status(201).json({ message: 'Dokter berhasil ditambahkan', dokter });
+});
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,12 +39,11 @@ app.use(expressLayouts);
 app.set('layout', 'layouts/main-layout');
 
 // Routes
-// Redirect ke login page
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
 
-// Login page (tanpa authentication)
+// Login page
 app.get('/login', (req, res) => {
     res.render('login', { 
         layout: 'layouts/auth-layout',
@@ -35,7 +51,7 @@ app.get('/login', (req, res) => {
     });
 });
 
-// Register page (tanpa authentication)
+// Register page
 app.get('/signup', (req, res) => {
     res.render('signup', { 
         layout: 'layouts/auth-layout',
@@ -43,7 +59,7 @@ app.get('/signup', (req, res) => {
     });
 });
 
-// Dashboard (perlu authentication)
+// Dashboard
 app.get('/dashboard', isAuthenticated, (req, res) => {
     res.render('dashboard', { 
         user: req.user,
@@ -53,7 +69,7 @@ app.get('/dashboard', isAuthenticated, (req, res) => {
 
 // Routes yang membutuhkan authentication
 app.use('/auth', authRoutes);
-app.use('/dokter', isAuthenticated, dokterRoutes);
+app.use('/dokter', isAuthenticated, dokterRoutes); // Pastikan rute ini ada
 app.use('/pasien', isAuthenticated, pasienRoutes);
 
 // Error handler
@@ -72,7 +88,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
