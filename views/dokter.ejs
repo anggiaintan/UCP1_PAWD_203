@@ -1,180 +1,201 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Dokter</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Manajemen Data Dokter</h1>
-
-        <!-- Tampilkan Daftar Dokter -->
-        <h3>Daftar Dokter</h3>
-        <table class="table table-bordered" id="dokter-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nama</th>
-                    <th>Spesialisasi</th>
-                    <th>No. Telepon</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (dokter.length > 0) { %>
-                    <% dokter.forEach(d => { %>
-                        <tr data-id="<%= d.id %>">
-                            <td><%= d.id %></td>
-                            <td><%= d.nama %></td>
-                            <td><%= d.spesialisasi %></td>
-                            <td><%= d.no_telp %></td>
-                            <td>
-                                <button class="btn btn-warning btn-sm" onclick="editDokter('<%= d.id %>', '<%= d.nama %>', '<%= d.spesialisasi %>', '<%= d.no_telp %>')">Edit</button>
-                                <form action="/dokter/delete" method="POST" style="display: inline;">
-                                    <input type="hidden" name="id" value="<%= d.id %>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } else { %>
-                    <tr>
-                        <td colspan="5" class="text-center">Tidak ada data dokter.</td>
-                    </tr>
-                <% } %>
-            </tbody>
-        </table>
-
-        <!-- Form untuk Tambah Dokter -->
-        <h3 id="form-title">Tambah Dokter</h3>
-        <form id="form-dokter-add" action="/dokter" method="POST">
-            <div class="mb-3">
-                <label for="nama" class="form-label">Nama Dokter</label>
-                <input type="text" class="form-control" id="nama" name="nama" required>
-            </div>
-            <div class="mb-3">
-                <label for="spesialisasi" class="form-label">Spesialisasi</label>
-                <input type="text" class="form-control" id="spesialisasi" name="spesialisasi" required>
-            </div>
-            <div class="mb-3">
-                <label for="no_telp" class="form-label">No. Telepon</label>
-                <input type="text" class="form-control" id="no_telp" name="no_telp" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Tambah</button>
-        </form>
-
-        <!-- Form untuk Update Dokter -->
-        <h3 id="form-title-edit" style="display:none;">Update Dokter</h3>
-        <form id="form-dokter-edit" action="/dokter/update" method="POST" style="display:none;">
-            <input type="hidden" id="dokter-id" name="id">
-            <div class="mb-3">
-                <label for="nama-edit" class="form-label">Nama Dokter</label>
-                <input type="text" class="form-control" id="nama-edit" name="nama" required>
-            </div>
-            <div class="mb-3">
-                <label for="spesialisasi-edit" class="form-label">Spesialisasi</label>
-                <input type="text" class="form-control" id="spesialisasi-edit" name="spesialisasi" required>
-            </div>
-            <div class="mb-3">
-                <label for="no_telp-edit" class="form-label">No. Telepon</label>
-                <input type="text" class="form-control" id="no_telp-edit" name="no_telp" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Update</button>
-        </form>              
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4>Manage Doctors</h4>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">Add Doctor</button>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        // Menangani pengiriman form tambah dokter menggunakan AJAX
-        $('#form-dokter-add').submit(function (e) {
-            e.preventDefault();
-
-            const nama = $('#nama').val();
-            const spesialisasi = $('#spesialisasi').val();
-            const no_telp = $('#no_telp').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '/dokter',
-                data: { nama, spesialisasi, no_telp },
-                success: function (data) {
-                    $('#nama').val('');
-                    $('#spesialisasi').val('');
-                    $('#no_telp').val('');
-                    $('#dokter-table tbody').append(`
-                        <tr data-id="${data.id}">
-                            <td>${data.id}</td>
-                            <td>${data.nama}</td>
-                            <td>${data.spesialisasi}</td>
-                            <td>${data.no_telp}</td>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Spesialisasi</th>
+                        <th>Phone Number</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% doctors.forEach(doctor => { %>
+                        <tr>
+                            <td><%= doctor.id %></td>
+                            <td><%= doctor.nama %></td>
+                            <td><%= doctor.spesialisasi %></td>
+                            <td><%= doctor.no_telp %></td>
                             <td>
-                                <button class="btn btn-warning btn-sm" onclick="editDokter('${data.id}', '${data.nama}', '${data.spesialisasi}', '${data.no_telp}')">Edit</button>
-                                <form action="/dokter/delete" method="POST" style="display: inline;">
-                                    <input type="hidden" name="id" value="${data.id}">
-                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                </form>
+                                <button class="btn btn-sm btn-warning edit-doctor" 
+                                        data-id="<%= doctor.id %>"
+                                        data-nama="<%= doctor.nama %>"
+                                        data-spesialisasi="<%= doctor.spesialisasi %>"
+                                        data-no_telp="<%= doctor.no_telp %>">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-doctor" 
+                                        data-id="<%= doctor.id %>">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
-                    `);
-                },
-                error: function () {
-                    alert('Gagal menambahkan data');
-                }
-            });
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Doctor Modal -->
+<div class="modal fade" id="addDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDoctorForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Spesialisasi</label>
+                        <input type="text" class="form-control" name="spesialisasi" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">No telp</label>
+                        <input type="text" class="form-control" name="no_telp" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitDoctor">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Doctor Modal -->
+<div class="modal fade" id="editDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editDoctorForm">
+                    <input type="hidden" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Spesialisasi</label>
+                        <input type="text" class="form-control" name="spesialisasi" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" name="no_telp" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="updateDoctor">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this doctor?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteDoctor">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Doctor
+    document.getElementById('submitDoctor').addEventListener('click', function() {
+        const form = document.getElementById('addDoctorForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        fetch('/dokter', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(() => window.location.reload())
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Edit Doctor
+    document.querySelectorAll('.edit-doctor').forEach(button => {
+        button.addEventListener('click', function() {
+            const form = document.getElementById('editDoctorForm');
+            form.id.value = this.dataset.id;
+            form.nama.value = this.dataset.nama;
+            form.spesialisasi.value = this.dataset.spesialisasi;
+            form.no_telp.value = this.dataset.no_telp;
+            
+            new bootstrap.Modal(document.getElementById('editDoctorModal')).show();
         });
+    });
 
-        // Fungsi untuk mengedit dokter
-        function editDokter(id, nama, spesialisasi, no_telp) {
-            $('#dokter-id').val(id);
-            $('#nama-edit').val(nama);
-            $('#spesialisasi-edit').val(spesialisasi);
-            $('#no_telp-edit').val(no_telp);
+    // Update Doctor
+    document.getElementById('updateDoctor').addEventListener('click', function() {
+        const form = document.getElementById('editDoctorForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        const id = data.id;
+        delete data.id;
 
-            $('#form-title').hide();
-            $('#form-dokter-add').hide();
-            $('#form-title-edit').show();
-            $('#form-dokter-edit').show();
-        }
+        fetch(`/dokter/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(() => window.location.reload())
+        .catch(error => console.error('Error:', error));
+    });
 
-        // Menangani pengiriman form update dokter
-        $('#form-dokter-edit').submit(function (e) {
-            e.preventDefault();
-
-            const id = $('#dokter-id').val();
-            const nama = $('#nama-edit').val();
-            const spesialisasi = $('#spesialisasi-edit').val();
-            const no_telp = $('#no_telp-edit').val();
-
-            $.ajax({
-                type: 'PUT',
-                url: '/dokter/update',
-                data: { id, nama, spesialisasi, no_telp },
-                success: function () {
-                    $('tr[data-id="' + id + '"]').html(`
-                        <td>${id}</td>
-                        <td>${nama}</td>
-                        <td>${spesialisasi}</td>
-                        <td>${no_telp}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="editDokter('${id}', '${nama}', '${spesialisasi}', '${no_telp}')">Edit</button>
-                            <form action="/dokter/delete" method="POST" style="display: inline;">
-                                <input type="hidden" name="id" value="${id}">
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                            </form>
-                        </td>
-                    `);
-                    $('#form-title').show();
-                    $('#form-dokter-add').show();
-                    $('#form-title-edit').hide();
-                    $('#form-dokter-edit').hide();
-                },
-                error: function () {
-                    alert('Gagal memperbarui data');
-                }
-            });
+    // Delete Doctor
+    let doctorIdToDelete;
+    document.querySelectorAll('.delete-doctor').forEach(button => {
+        button.addEventListener('click', function() {
+            doctorIdToDelete = this.dataset.id;
+            new bootstrap.Modal(document.getElementById('deleteDoctorModal')).show();
         });
-    </script>
-</body>
-</html>
+    });
+
+    document.getElementById('confirmDeleteDoctor').addEventListener('click', function() {
+        fetch(`/dokter/${doctorIdToDelete}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(() => window.location.reload())
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>

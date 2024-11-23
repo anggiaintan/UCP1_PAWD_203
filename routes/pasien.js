@@ -1,84 +1,88 @@
+
+// pasien.js
 const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
-const { isAuthenticated } = require('../middlewares/middleware');
 
-// Pastikan pengguna terautentikasi sebelum mengakses rute ini
-router.use(isAuthenticated);
-
-// Endpoint untuk mendapatkan semua data pasien
+// Render pasien page
 router.get('/', (req, res) => {
-    db.query('SELECT * FROM pasien', (err, results) => {
+    const query = 'SELECT * FROM pasien';
+    db.query(query, (err, results) => {
         if (err) {
-            console.error('Database query error:', err);
-            return res.status(500).send('Internal Server Error');
+            res.status(500).render('error', { 
+                layout: 'layouts/auth-layout',
+                message: err.message 
+            });
+            return;
         }
-        res.render('pasien', { pasien: results || [], user: req.user });
+        res.render('pasien', { 
+            patients: results,
+            user: req.user 
+        });
     });
 });
 
-// Endpoint untuk menambahkan data pasien baru
+// Get all patients
+router.get('/list', (req, res) => {
+    const query = 'SELECT * FROM pasien';
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+// Add patient
 router.post('/', (req, res) => {
     const { nama, usia, diagnosis } = req.body;
-
-    // Validasi: Hapus referensi ke "keluhan"
-    if (!nama || !usia || !diagnosis) {
-        return res.status(400).json({ error: 'Field nama, usia, dan diagnosis wajib diisi' }); // Sesuai field yang benar
-    }
-
-    // Query untuk menyimpan data
-    db.query(
-        'INSERT INTO pasien (nama, usia, diagnosis) VALUES (?, ?, ?)',
-        [nama, usia, diagnosis],
-        (err, results) => {
-            if (err) {
-                console.error('Error inserting into database:', err);
-                return res.status(500).json({ error: 'Database error' });
-            }
-            res.status(200).json({ id: results.insertId, nama, usia, diagnosis });
+    const query = 'INSERT INTO pasien (nama, usia, diagnosis) VALUES (?, ?, ?)';
+    
+    db.query(query, [nama, usia, diagnosis], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
         }
-    );
+        res.status(201).json({
+            id: results.insertId,
+            message: 'Patient added successfully'
+        });
+    });
 });
 
-// Endpoint untuk update data pasien
-router.put('/update', (req, res) => {
-    const { id, nama, usia, diagnosis } = req.body;
-
-    // Validasi data yang diperlukan
-    if (!id || !nama || !usia || !diagnosis) {
-        return res.status(400).json({ error: 'Field id, nama, usia, dan diagnosis wajib diisi' });
-    }
-
-    // Query untuk mengupdate data pasien
-    db.query(
-        'UPDATE pasien SET nama = ?, usia = ?, diagnosis = ? WHERE id = ?',
-        [nama, usia, diagnosis, id],
-        (err, results) => {
-            if (err) {
-                console.error('Error updating database:', err);
-                return res.status(500).json({ error: 'Database error' });
-            }
-
-            if (results.affectedRows === 0) {
-                return res.status(404).json({ error: 'Pasien tidak ditemukan' });
-            }
-
-            // Return updated data
-            res.status(200).json({ id, nama, usia, diagnosis });
+// Update patient
+router.put('/:id', (req, res) => {
+    const { nama, usia, diagnosis } = req.body;
+    const query = 'UPDATE pasien SET nama = ?, usia = ?, diagnosis = ? WHERE id = ?';
+    
+    db.query(query, [nama, usia, diagnosis, req.params.id], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
         }
-    );
+        if (results.affectedRows === 0) {
+            res.status(404).json({ message: 'Patient not found' });
+            return;
+        }
+        res.json({ message: 'Patient updated successfully' });
+    });
 });
 
-
-
-// Endpoint untuk menghapus data pasien
-router.post('/delete', (req, res) => {
-    const { id } = req.body;
-
-    db.query('DELETE FROM pasien WHERE id = ?', [id], (err, results) => {
-        if (err) return res.status(500).send('Internal Server Error');
-        if (results.affectedRows === 0) return res.status(404).send('Data pasien tidak ditemukan');
-        res.redirect('/pasien');
+// Delete patient
+router.delete('/:id', (req, res) => {
+    const query = 'DELETE FROM pasien WHERE id = ?';
+    
+    db.query(query, [req.params.id], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (results.affectedRows === 0) {
+            res.status(404).json({ message: 'Patient not found' });
+            return;
+        }
+        res.json({ message: 'Patient deleted successfully' });
     });
 });
 
